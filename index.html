@@ -24,6 +24,9 @@
   --gold-light: #fef3c7;
   --success: #059669;
   --success-light: #d1fae5;
+  --whatsapp: #25D366;
+  --whatsapp-hover: #128C7E;
+  --whatsapp-light: #dcf8c6;
   --danger: #dc2626;
   --danger-light: #fee2e2;
   --border: rgba(90,80,160,0.12);
@@ -55,6 +58,8 @@
   --gold-light: #2d2410;
   --success: #10b981;
   --success-light: #0a2a1e;
+  --whatsapp: #25D366;
+  --whatsapp-light: #1a3628;
   --danger: #f87171;
   --danger-light: #2a1010;
   --border: rgba(140,130,220,0.14);
@@ -162,6 +167,12 @@ input, select, textarea, button { font-family: var(--font); font-size: 14px; }
 
 .btn-danger { background: var(--danger-light); color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: white; }
+
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #047857; }
+
+.btn-whatsapp { background: var(--whatsapp); color: white; }
+.btn-whatsapp:hover { background: var(--whatsapp-hover); color: white; transform: translateY(-1px); }
 
 .btn-sm { padding: 7px 14px; font-size: 13px; }
 .btn-full { width: 100%; }
@@ -420,7 +431,7 @@ input, select, textarea, button { font-family: var(--font); font-size: 14px; }
 
 .modal-title { font-size: 18px; font-weight: 600; }
 .modal-body { padding: 24px 28px; }
-.modal-footer { padding: 16px 28px 24px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border); }
+.modal-footer { padding: 16px 28px 24px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border); flex-wrap: wrap;}
 
 .close-btn {
   width: 32px; height: 32px;
@@ -926,11 +937,11 @@ textarea.form-input { resize: vertical; min-height: 70px; }
   </main>
 </div>
 
-<!-- ===== NEW INVOICE MODAL ===== -->
+<!-- ===== NEW/EDIT INVOICE MODAL ===== -->
 <div class="modal-overlay hidden" id="invoice-modal">
   <div class="modal">
     <div class="modal-header">
-      <h2 class="modal-title">Create New Invoice</h2>
+      <h2 class="modal-title" id="invoice-modal-title">Create New Invoice</h2>
       <button class="close-btn" onclick="closeInvoiceModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -1067,6 +1078,10 @@ textarea.form-input { resize: vertical; min-height: 70px; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         PDF
       </button>
+      <button class="btn btn-whatsapp" onclick="shareViaWhatsApp()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="currentColor" stroke-width="0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        WhatsApp
+      </button>
       <button class="btn btn-primary" onclick="printInvoice()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print
@@ -1088,15 +1103,10 @@ textarea.form-input { resize: vertical; min-height: 70px; }
    CONFIGURATION — Replace with your Firebase config
    ===================================================== */
 const FIREBASE_CONFIG = {
-  // Paste your Firebase project config here.
-  // Get it from: Firebase Console > Project Settings > General > Your apps
-  // Example:
-  // apiKey: "AIzaSy...",
-  // authDomain: "your-project.firebaseapp.com",
-  // projectId: "your-project-id",
-  // storageBucket: "your-project.appspot.com",
-  // messagingSenderId: "123456789",
-  // appId: "1:123456789:web:abcdef"
+  // apiKey: "...",
+  // authDomain: "...",
+  // projectId: "...",
+  // ...
 };
 
 /* =====================================================
@@ -1134,6 +1144,7 @@ let settings = {
   prefix: 'INV'
 };
 let invoiceCounter = 1;
+let items = [];
 
 /* =====================================================
    INR FORMATTER
@@ -1203,7 +1214,6 @@ async function handleLogin() {
       showAuthError(getFriendlyError(e.code));
     }
   } else {
-    // LocalStorage auth fallback
     const users = LS.get('users') || {};
     if (!users[email] || users[email].password !== btoa(password)) {
       btn.innerHTML = 'Sign In'; btn.disabled = false;
@@ -1250,7 +1260,6 @@ async function handleRegister() {
 
 function handleDemoLogin() {
   currentUser = { email: 'demo@billmate.in', displayName: 'Demo Business', uid: 'demo' };
-  // Load demo data
   invoices = generateDemoData();
   enterApp();
   showToast('Welcome to the demo! 🎉', 'success');
@@ -1289,39 +1298,32 @@ function enterApp() {
   document.getElementById('app').style.display = 'flex';
   document.getElementById('app').classList.add('visible');
 
-  // Load settings
   loadSettings();
 
-  // Set user info in sidebar
   const name = currentUser.displayName || currentUser.email.split('@')[0];
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('sidebar-avatar').textContent = initials;
   document.getElementById('sidebar-name').textContent = name;
   document.getElementById('sidebar-email').textContent = currentUser.email;
 
-  // Load invoices
   loadInvoices();
 
-  // Set today's date defaults
   document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
   const due = new Date(); due.setDate(due.getDate() + 15);
   document.getElementById('inv-due-date').value = due.toISOString().split('T')[0];
 }
 
-/* ===== FIREBASE AUTH OBSERVER ===== */
 if (auth) {
   auth.onAuthStateChanged(user => {
     if (user) {
       currentUser = user;
       enterApp();
     } else {
-      // Check LS session
       const sess = LS.get('session');
       if (sess) { currentUser = sess; enterApp(); }
     }
   });
 } else {
-  // Check LS session on load
   const sess = LS.get('session');
   if (sess) { currentUser = sess; setTimeout(enterApp, 100); }
 }
@@ -1412,7 +1414,6 @@ function showPage(name) {
       n.classList.add('active');
   });
 
-  // Close mobile sidebar
   document.getElementById('sidebar').classList.remove('open');
 
   if (name === 'invoices') renderInvoicesTable(invoices);
@@ -1424,14 +1425,45 @@ function toggleSidebar() {
 }
 
 /* =====================================================
-   INVOICE MODAL
+   INVOICE MODAL (CREATE & EDIT)
    ===================================================== */
-let items = [];
-
 function openNewInvoice() {
   editingInvoiceId = null;
   items = [{ name: '', qty: 1, rate: 0 }];
   renderItems();
+  resetFormFields();
+  recalcTotals();
+  document.getElementById('invoice-modal-title').textContent = "Create New Invoice";
+  document.getElementById('invoice-modal').classList.remove('hidden');
+}
+
+function editInvoice(id) {
+  const inv = invoices.find(i => i.id === id);
+  if (!inv) return;
+  
+  editingInvoiceId = id;
+  // Deep copy items to avoid editing the saved object directly before saving
+  items = JSON.parse(JSON.stringify(inv.items));
+  
+  // Populate Fields
+  document.getElementById('cust-name').value = inv.custName || '';
+  document.getElementById('cust-phone').value = inv.custPhone || '';
+  document.getElementById('cust-address').value = inv.custAddress || '';
+  document.getElementById('inv-date').value = inv.date || '';
+  document.getElementById('inv-due-date').value = inv.dueDate || '';
+  document.getElementById('inv-status').value = inv.status || 'pending';
+  document.getElementById('inv-gst').value = inv.gstPct || 0;
+  document.getElementById('inv-discount').value = inv.discount || 0;
+  document.getElementById('inv-notes').value = inv.notes || '';
+
+  renderItems();
+  recalcTotals();
+  
+  document.getElementById('invoice-modal-title').textContent = "Edit Invoice";
+  document.getElementById('invoice-modal').classList.remove('hidden');
+}
+
+function resetFormFields() {
   document.getElementById('cust-name').value = '';
   document.getElementById('cust-phone').value = '';
   document.getElementById('cust-address').value = '';
@@ -1442,8 +1474,6 @@ function openNewInvoice() {
   document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
   const due = new Date(); due.setDate(due.getDate() + 15);
   document.getElementById('inv-due-date').value = due.toISOString().split('T')[0];
-  recalcTotals();
-  document.getElementById('invoice-modal').classList.remove('hidden');
 }
 
 function closeInvoiceModal() {
@@ -1491,7 +1521,6 @@ function recalcTotals() {
   document.getElementById('t-discount').textContent = '-' + formatINR(discount);
   document.getElementById('t-grand').textContent = formatINR(Math.max(0, grand));
 
-  // Update per-item amounts
   items.forEach((item, i) => {
     const el = document.getElementById('item-amt-' + i);
     if (el) el.textContent = formatINR(item.qty * item.rate);
@@ -1504,6 +1533,7 @@ async function saveInvoice() {
   if (items.every(i => !i.name)) return showToast('Add at least one item', 'error');
 
   const btn = document.getElementById('save-inv-btn');
+  const originalText = btn.innerHTML;
   btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
 
   const subtotal = items.reduce((s, i) => s + (i.qty * i.rate), 0);
@@ -1512,10 +1542,25 @@ async function saveInvoice() {
   const gstAmt = subtotal * gstPct / 100;
   const grand = Math.max(0, subtotal + gstAmt - discount);
 
+  // If editing, we keep the existing ID and Number. If new, we generate them.
+  let invId = editingInvoiceId;
+  let invNumber = '';
+  let invCounter = 0;
+
+  if (editingInvoiceId) {
+    const existing = invoices.find(i => i.id === editingInvoiceId);
+    invNumber = existing.number;
+    invCounter = existing.counter;
+  } else {
+    invId = Date.now().toString();
+    invCounter = invoiceCounter++;
+    invNumber = `${settings.prefix}-${String(invCounter).padStart(4, '0')}`;
+  }
+
   const inv = {
-    id: editingInvoiceId || Date.now().toString(),
-    counter: invoiceCounter++,
-    number: `${settings.prefix}-${String(invoiceCounter - 1).padStart(4, '0')}`,
+    id: invId,
+    counter: invCounter,
+    number: invNumber,
     custName,
     custPhone: document.getElementById('cust-phone').value.trim(),
     custAddress: document.getElementById('cust-address').value.trim(),
@@ -1525,7 +1570,8 @@ async function saveInvoice() {
     items: [...items],
     gstPct, discount, subtotal, gstAmt, grand,
     notes: document.getElementById('inv-notes').value.trim(),
-    createdAt: new Date().toISOString()
+    createdAt: editingInvoiceId ? invoices.find(i => i.id === invId).createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   if (editingInvoiceId) {
@@ -1538,13 +1584,12 @@ async function saveInvoice() {
   await persistInvoice(inv);
   refreshAll();
   closeInvoiceModal();
-  showToast('Invoice saved! 🎉', 'success');
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save Invoice';
-  btn.disabled = false;
+  showToast(editingInvoiceId ? 'Invoice updated! ✏️' : 'Invoice saved! 🎉', 'success');
+  btn.innerHTML = originalText; btn.disabled = false;
 }
 
 /* =====================================================
-   INVOICE PREVIEW & PRINT
+   INVOICE PREVIEW & WHATSAPP
    ===================================================== */
 function previewInvoice(id) {
   const inv = invoices.find(i => i.id === id);
@@ -1556,6 +1601,33 @@ function previewInvoice(id) {
 
 function closePreviewModal() {
   document.getElementById('invoice-preview-modal').classList.add('hidden');
+}
+
+function shareViaWhatsApp() {
+  if (!currentPreviewInvoice) return;
+  
+  const inv = currentPreviewInvoice;
+  const phone = inv.custPhone ? inv.custPhone.replace(/[^0-9]/g, '') : '';
+  
+  // Build a summary message
+  let message = `Hello ${inv.custName},%0A%0A`;
+  message += `🧾 *Invoice Details*%0A`;
+  message += `Invoice No: ${inv.number}%0A`;
+  message += `Date: ${formatDate(inv.date)}%0A`;
+  message += `Total Amount: *${formatINR(inv.grand)}*%0A%0A`;
+  
+  if (inv.dueDate) {
+    message += `Due Date: ${formatDate(inv.dueDate)}%0A`;
+  }
+  
+  message += `Status: ${inv.status.toUpperCase()}%0A%0A`;
+  message += `Thank you for your business! 🙏`;
+
+  const url = phone
+    ? `https://wa.me/${phone}?text=${message}`
+    : `https://wa.me/?text=${message}`;
+    
+  window.open(url, '_blank');
 }
 
 function renderInvoiceHTML(inv) {
@@ -1661,7 +1733,7 @@ function exportPDF() {
 }
 
 /* =====================================================
-   DASHBOARD
+   DASHBOARD & TABLES
    ===================================================== */
 function refreshDashboard() {
   const total = invoices.reduce((s, i) => s + (i.grand || 0), 0);
@@ -1677,7 +1749,6 @@ function refreshDashboard() {
   document.getElementById('stat-month').textContent = formatINR(thisMonth);
   document.getElementById('stat-avg').textContent = formatINR(avg);
 
-  // Recent 5 invoices
   const recent = invoices.slice(0, 5);
   const tbody = document.getElementById('recent-invoices-body');
   if (!recent.length) {
@@ -1695,9 +1766,6 @@ function refreshDashboard() {
   `).join('');
 }
 
-/* =====================================================
-   INVOICES TABLE
-   ===================================================== */
 function renderInvoicesTable(list) {
   const tbody = document.getElementById('invoices-body');
   if (!list.length) {
@@ -1714,10 +1782,13 @@ function renderInvoicesTable(list) {
       <td class="amount-cell">${formatINR(inv.grand)}</td>
       <td>
         <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="previewInvoice('${inv.id}')">
+          <button class="btn btn-ghost btn-sm" onclick="previewInvoice('${inv.id}')" title="View">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
-          <button class="btn btn-danger btn-sm" onclick="confirmDelete('${inv.id}')">
+          <button class="btn btn-ghost btn-sm" onclick="editInvoice('${inv.id}')" title="Edit">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('${inv.id}')" title="Delete">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           </button>
         </div>
@@ -1744,9 +1815,6 @@ function confirmDelete(id) {
   }
 }
 
-/* =====================================================
-   REFRESH ALL
-   ===================================================== */
 function refreshAll() {
   refreshDashboard();
   renderInvoicesTable(invoices);
@@ -1767,7 +1835,6 @@ function toggleTheme() {
   }
 }
 
-// Apply saved theme
 const savedTheme = LS.get('theme');
 if (savedTheme === 'dark') {
   document.documentElement.setAttribute('data-theme', 'dark');
