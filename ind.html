@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BillMate — Indian Invoice Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & ROOT ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #1a1a2e;
+  --ink-2: #2d2d44;
+  --ink-muted: #6b6b8a;
+  --ink-faint: #a8a8c0;
+  --surface: #ffffff;
+  --surface-2: #f5f5fb;
+  --surface-3: #ededf8;
+  --accent: #5b4cf5;
+  --accent-2: #7c6ff7;
+  --accent-light: #edeaff;
+  --gold: #f59e0b;
+  --gold-light: #fef3c7;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --border: rgba(90,80,160,0.12);
+  --border-2: rgba(90,80,160,0.22);
+  --shadow-sm: 0 1px 3px rgba(30,20,80,0.08), 0 1px 2px rgba(30,20,80,0.04);
+  --shadow-md: 0 4px 16px rgba(30,20,80,0.10), 0 2px 4px rgba(30,20,80,0.06);
+  --shadow-lg: 0 12px 40px rgba(30,20,80,0.14), 0 4px 10px rgba(30,20,80,0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --transition: 180ms ease;
+}
+
+[data-theme="dark"] {
+  --ink: #e8e8f8;
+  --ink-2: #c8c8e8;
+  --ink-muted: #8888aa;
+  --ink-faint: #55556a;
+  --surface: #141420;
+  --surface-2: #1c1c2e;
+  --surface-3: #242438;
+  --accent: #7c6ff7;
+  --accent-2: #9e94f9;
+  --accent-light: #2a2445;
+  --gold: #fbbf24;
+  --gold-light: #2d2410;
+  --success: #10b981;
+  --success-light: #0a2a1e;
+  --danger: #f87171;
+  --danger-light: #2a1010;
+  --border: rgba(140,130,220,0.14);
+  --border-2: rgba(140,130,220,0.24);
+}
+
+html { font-family: var(--font); font-size: 15px; color: var(--ink); background: var(--surface-2); line-height: 1.6; }
+body { min-height: 100vh; }
+input, select, textarea, button { font-family: var(--font); font-size: 14px; }
+
+/* ===== UTILITY ===== */
+.hidden { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+/* ===== AUTH SCREEN ===== */
+#auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 24px;
+}
+
+.auth-card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.auth-logo-icon {
+  width: 44px; height: 44px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.auth-logo-text { font-size: 22px; font-weight: 600; color: var(--ink); }
+.auth-logo-sub { font-size: 12px; color: var(--ink-muted); margin-top: -2px; }
+
+.auth-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.auth-subtitle { color: var(--ink-muted); margin-bottom: 32px; font-size: 14px; }
+
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 28px;
+}
+
+.auth-tab {
+  flex: 1; padding: 8px; border: none; background: transparent;
+  border-radius: 6px; cursor: pointer; font-size: 14px;
+  font-weight: 500; color: var(--ink-muted); transition: all var(--transition);
+}
+
+.auth-tab.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+.form-group { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-2); margin-bottom: 7px; }
+
+.form-input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.form-input:focus { border-color: var(--accent); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 22px; border: none; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 14px; font-weight: 500;
+  transition: all var(--transition); text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--accent); color: white;
+  box-shadow: 0 2px 8px rgba(91,76,245,0.35);
+}
+.btn-primary:hover { background: var(--accent-2); box-shadow: 0 4px 16px rgba(91,76,245,0.45); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-ghost { background: var(--surface-2); color: var(--ink); border: 1.5px solid var(--border-2); }
+.btn-ghost:hover { background: var(--surface-3); }
+
+.btn-danger { background: var(--danger-light); color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: white; }
+
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+.btn-full { width: 100%; }
+.btn-icon { padding: 8px; border-radius: var(--radius-sm); }
+
+.auth-error { background: var(--danger-light); color: var(--danger); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 18px; }
+.auth-success { background: var(--success-light); color: var(--success); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 18px; }
+.auth-divider { text-align: center; color: var(--ink-faint); font-size: 12px; margin: 20px 0; position: relative; }
+.auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--border); }
+.auth-divider::before { left: 0; } .auth-divider::after { right: 0; }
+
+/* ===== APP SHELL ===== */
+#app { display: none; min-height: 100vh; }
+#app.visible { display: flex; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 18px; font-weight: 700;
+}
+
+.logo-name { font-size: 17px; font-weight: 600; color: var(--ink); }
+.logo-tagline { font-size: 11px; color: var(--ink-muted); }
+
+.sidebar-nav { padding: 16px 12px; flex: 1; }
+
+.nav-section { margin-bottom: 24px; }
+.nav-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-faint); padding: 0 10px; margin-bottom: 8px; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 14px; font-weight: 500;
+  color: var(--ink-muted); transition: all var(--transition);
+  border: none; background: transparent; width: 100%; text-align: left;
+}
+
+.nav-item:hover { background: var(--surface-2); color: var(--ink); }
+.nav-item.active { background: var(--accent-light); color: var(--accent); }
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.user-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.user-avatar {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 13px; font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-name { font-size: 13px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-email { font-size: 11px; color: var(--ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===== MAIN CONTENT ===== */
+.main { flex: 1; overflow-y: auto; background: var(--surface-2); }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+
+.topbar-title { font-size: 20px; font-weight: 600; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+.theme-toggle {
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-muted); transition: all var(--transition);
+}
+.theme-toggle:hover { background: var(--surface-2); color: var(--ink); }
+
+/* ===== PAGE CONTENT ===== */
+.page { padding: 28px; }
+.page.hidden { display: none; }
+
+/* ===== DASHBOARD ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition);
+}
+
+.stat-card:hover { box-shadow: var(--shadow-md); }
+
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+  font-size: 20px;
+}
+
+.stat-icon.purple { background: var(--accent-light); color: var(--accent); }
+.stat-icon.gold { background: var(--gold-light); color: var(--gold); }
+.stat-icon.green { background: var(--success-light); color: var(--success); }
+.stat-icon.red { background: var(--danger-light); color: var(--danger); }
+
+.stat-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); margin-bottom: 6px; }
+.stat-value { font-size: 26px; font-weight: 600; color: var(--ink); font-family: var(--mono); }
+.stat-sub { font-size: 12px; color: var(--ink-muted); margin-top: 4px; }
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title { font-size: 17px; font-weight: 600; }
+
+/* ===== TABLE ===== */
+.table-wrapper { overflow-x: auto; }
+
+.data-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.data-table th {
+  padding: 12px 18px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 14px 18px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--surface-2); }
+
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-green { background: var(--success-light); color: var(--success); }
+.badge-gold { background: var(--gold-light); color: var(--gold); }
+.badge-red { background: var(--danger-light); color: var(--danger); }
+
+.amount-cell { font-family: var(--mono); font-weight: 500; color: var(--ink); }
+
+/* ===== SEARCH ===== */
+.search-bar {
+  position: relative;
+  flex: 1; max-width: 320px;
+}
+
+.search-bar input {
+  width: 100%; padding: 9px 14px 9px 36px;
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+  font-size: 14px;
+  transition: border-color var(--transition);
+}
+
+.search-bar input:focus { border-color: var(--accent); }
+
+.search-icon {
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  color: var(--ink-faint); pointer-events: none;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,10,40,0.5);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 24px;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 700px;
+  box-shadow: var(--shadow-lg);
+  margin: auto;
+}
+
+.modal-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.modal-title { font-size: 18px; font-weight: 600; }
+.modal-body { padding: 24px 28px; }
+.modal-footer { padding: 16px 28px 24px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border); }
+
+.close-btn {
+  width: 32px; height: 32px;
+  border: none; background: var(--surface-2);
+  border-radius: var(--radius-sm); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-muted); font-size: 18px; line-height: 1;
+  transition: all var(--transition);
+}
+.close-btn:hover { background: var(--danger-light); color: var(--danger); }
+
+/* ===== INVOICE FORM ===== */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 600px) { .form-row, .form-row.three { grid-template-columns: 1fr; } }
+
+.form-section { margin-bottom: 24px; }
+.form-section-title {
+  font-size: 13px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ink-muted); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.form-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+textarea.form-input { resize: vertical; min-height: 70px; }
+
+/* ===== ITEMS TABLE ===== */
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table th {
+  padding: 8px 10px; text-align: left;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-muted); background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.items-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
+.items-table tr:last-child td { border-bottom: none; }
+
+.item-input {
+  width: 100%; padding: 8px 10px;
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink); outline: none;
+  font-size: 13px;
+  transition: border-color var(--transition);
+}
+.item-input:focus { border-color: var(--accent); }
+.item-amount { font-family: var(--mono); font-size: 13px; color: var(--ink); font-weight: 500; padding: 8px 10px; }
+
+.totals-section {
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-top: 16px;
+}
+
+.total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0;
+  font-size: 14px;
+}
+.total-row.divider { border-top: 1.5px solid var(--border-2); margin-top: 8px; padding-top: 12px; }
+.total-row.grand { font-size: 18px; font-weight: 600; color: var(--accent); }
+.total-label { color: var(--ink-muted); }
+.total-value { font-family: var(--mono); font-weight: 500; }
+
+/* ===== INVOICE PREVIEW ===== */
+#invoice-preview-modal .modal { max-width: 820px; }
+
+.invoice-print-area {
+  background: white;
+  color: #1a1a2e;
+  padding: 48px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; }
+.inv-biz-name { font-size: 26px; font-weight: 700; color: #1a1a2e; }
+.inv-biz-sub { font-size: 13px; color: #6b6b8a; margin-top: 3px; }
+.inv-number { text-align: right; }
+.inv-number h2 { font-size: 28px; font-weight: 700; color: #5b4cf5; letter-spacing: -0.02em; }
+.inv-number p { font-size: 13px; color: #6b6b8a; margin-top: 3px; }
+
+.inv-divider { height: 1.5px; background: linear-gradient(90deg, #5b4cf5 0%, #f59e0b 100%); margin: 24px 0; border-radius: 2px; }
+
+.inv-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+.inv-party-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #a8a8c0; margin-bottom: 8px; }
+.inv-party-name { font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+.inv-party-detail { font-size: 13px; color: #6b6b8a; line-height: 1.6; }
+
+.inv-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+.inv-table th {
+  padding: 10px 14px;
+  background: #ededf8; color: #2d2d44;
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  text-align: left; border-bottom: 2px solid #5b4cf5;
+}
+.inv-table th:last-child, .inv-table td:last-child { text-align: right; }
+.inv-table td { padding: 11px 14px; border-bottom: 1px solid #ededf8; color: #1a1a2e; }
+.inv-table tr:last-child td { border-bottom: none; }
+.inv-table tr:nth-child(even) td { background: #f5f5fb; }
+.inv-table .amount { font-family: 'DM Mono', monospace; font-weight: 500; }
+
+.inv-totals {
+  margin-left: auto; width: 260px;
+  border: 1px solid #ededf8;
+  border-radius: 12px; overflow: hidden;
+}
+.inv-total-row {
+  display: flex; justify-content: space-between;
+  padding: 9px 16px; font-size: 13px; color: #6b6b8a;
+  border-bottom: 1px solid #ededf8;
+}
+.inv-total-row:last-child { border-bottom: none; }
+.inv-total-row.grand {
+  background: #5b4cf5; color: white;
+  font-weight: 600; font-size: 15px; padding: 12px 16px;
+}
+.inv-total-row span:last-child { font-family: 'DM Mono', monospace; }
+
+.inv-footer {
+  margin-top: 40px; padding-top: 20px;
+  border-top: 1px solid #ededf8;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #a8a8c0;
+}
+
+.inv-stamp {
+  width: 80px; height: 80px;
+  border: 2.5px solid #059669; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #059669; font-size: 11px; font-weight: 600; text-align: center; line-height: 1.3;
+}
+
+/* ===== SETTINGS ===== */
+.settings-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.settings-card-header { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+.settings-card-title { font-size: 15px; font-weight: 600; }
+.settings-card-body { padding: 20px 24px; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center; padding: 60px 24px;
+  color: var(--ink-muted);
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-text { font-size: 15px; font-weight: 500; margin-bottom: 8px; color: var(--ink); }
+.empty-sub { font-size: 13px; color: var(--ink-muted); }
+
+/* ===== TOAST ===== */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+}
+
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 18px;
+  background: var(--ink);
+  color: var(--surface);
+  border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: slideIn 0.3s ease;
+  max-width: 320px;
+}
+
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ===== LOADING ===== */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== MOBILE ===== */
+.mobile-menu-btn {
+  display: none;
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: transparent; cursor: pointer;
+  flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.mobile-menu-btn span { width: 18px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -240px; top: 0; height: 100vh; z-index: 50; transition: left 0.3s ease; }
+  .sidebar.open { left: 0; }
+  .mobile-menu-btn { display: flex; }
+  .page { padding: 20px 16px; }
+  .topbar { padding: 16px 20px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .inv-parties { grid-template-columns: 1fr; }
+  .inv-totals { width: 100%; }
+  .invoice-print-area { padding: 28px 20px; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  body * { visibility: hidden; }
+  #printable-invoice, #printable-invoice * { visibility: visible; }
+  #printable-invoice {
+    position: fixed !important;
+    left: 0 !important; top: 0 !important;
+    width: 100% !important; height: auto !important;
+    padding: 24px !important;
+    background: white !important;
+    z-index: 99999 !important;
+    color: #1a1a2e !important;
+  }
+  #invoice-preview-modal .modal-header,
+  #invoice-preview-modal .modal-footer { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">₹</div>
+      <div>
+        <div class="auth-logo-text">BillMate</div>
+        <div class="auth-logo-sub">Indian Invoice Manager</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+    </div>
+
+    <div id="auth-error" class="auth-error hidden"></div>
+    <div id="auth-success" class="auth-success hidden"></div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="login-email" class="form-input" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="handleLogin()" id="login-btn" style="margin-top:8px">
+        Sign In
+      </button>
+      <div class="auth-divider" style="margin-top:20px">or try demo</div>
+      <button class="btn btn-ghost btn-full" onclick="handleDemoLogin()">
+        🚀 Demo Account
+      </button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="hidden">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="reg-name" class="form-input" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="reg-password" class="form-input" placeholder="Min 6 characters">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="handleRegister()" id="reg-btn" style="margin-top:8px">
+        Create Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">₹</div>
+      <div>
+        <div class="logo-name">BillMate</div>
+        <div class="logo-tagline">Invoice Manager</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Overview</div>
+        <button class="nav-item active" onclick="showPage('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          Dashboard
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Billing</div>
+        <button class="nav-item" onclick="showPage('invoices')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Invoices
+        </button>
+        <button class="nav-item" onclick="openNewInvoice()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          New Invoice
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Account</div>
+        <button class="nav-item" onclick="showPage('settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div style="flex:1;overflow:hidden">
+          <div class="user-name" id="sidebar-name">User</div>
+          <div class="user-email" id="sidebar-email">-</div>
+        </div>
+        <button class="btn-icon btn-ghost" title="Logout" onclick="handleLogout()" style="padding:6px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()" id="menu-btn">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 class="topbar-title" id="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="theme-icon"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openNewInvoice()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Invoice
+        </button>
+      </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div class="page" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon purple">₹</div>
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value" id="stat-revenue">₹0</div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold">📄</div>
+          <div class="stat-label">Total Invoices</div>
+          <div class="stat-value" id="stat-count">0</div>
+          <div class="stat-sub">Created</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✓</div>
+          <div class="stat-label">This Month</div>
+          <div class="stat-value" id="stat-month">₹0</div>
+          <div class="stat-sub" id="stat-month-label">Revenue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">⚡</div>
+          <div class="stat-label">Avg Invoice</div>
+          <div class="stat-value" id="stat-avg">₹0</div>
+          <div class="stat-sub">Per invoice</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">Recent Invoices</h2>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('invoices')">View all →</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="recent-invoices-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="recent-invoices-body">
+            <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📄</div><div class="empty-text">No invoices yet</div><div class="empty-sub">Create your first invoice!</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Invoices Page -->
+    <div class="page hidden" id="page-invoices">
+      <div class="section-header" style="margin-bottom:20px">
+        <div class="search-bar">
+          <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="search-input" placeholder="Search by customer or invoice #..." oninput="filterInvoices()">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openNewInvoice()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Invoice
+        </button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Date</th>
+              <th>GST</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoices-body">
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📄</div><div class="empty-text">No invoices yet</div><div class="empty-sub">Create your first invoice to get started</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="page hidden" id="page-settings">
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-title">Business Profile</div>
+        </div>
+        <div class="settings-card-body">
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Business Name</label>
+              <input type="text" id="biz-name" class="form-input" placeholder="Your Business Name">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">GST Number</label>
+              <input type="text" id="biz-gst" class="form-input" placeholder="22AAAAA0000A1Z5">
+            </div>
+          </div>
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Phone</label>
+              <input type="text" id="biz-phone" class="form-input" placeholder="+91 98765 43210">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Email</label>
+              <input type="text" id="biz-email" class="form-input" placeholder="business@example.com">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label">Address</label>
+            <textarea id="biz-address" class="form-input" rows="3" placeholder="Your full business address"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Invoice Prefix</label>
+            <input type="text" id="biz-prefix" class="form-input" placeholder="INV" style="max-width:200px">
+            <p style="font-size:12px;color:var(--ink-muted);margin-top:6px">Invoices will be numbered like: INV-0001, INV-0002...</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== NEW INVOICE MODAL ===== -->
+<div class="modal-overlay hidden" id="invoice-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Create New Invoice</h2>
+      <button class="close-btn" onclick="closeInvoiceModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Customer Info -->
+      <div class="form-section">
+        <div class="form-section-title">Customer Details</div>
+        <div class="form-row" style="margin-bottom:14px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Customer Name *</label>
+            <input type="text" id="cust-name" class="form-input" placeholder="Full name">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="cust-phone" class="form-input" placeholder="+91 98765 43210">
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Address</label>
+          <textarea id="cust-address" class="form-input" placeholder="Customer address (optional)"></textarea>
+        </div>
+      </div>
+
+      <!-- Invoice Details -->
+      <div class="form-section">
+        <div class="form-section-title">Invoice Details</div>
+        <div class="form-row three">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Invoice Date</label>
+            <input type="date" id="inv-date" class="form-input">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Due Date</label>
+            <input type="date" id="inv-due-date" class="form-input">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Status</label>
+            <select id="inv-status" class="form-input">
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="form-section">
+        <div class="form-section-title">Line Items</div>
+        <div class="table-wrapper">
+          <table class="items-table" id="items-table">
+            <thead>
+              <tr>
+                <th style="width:40%">Item / Description</th>
+                <th style="width:13%">Qty</th>
+                <th style="width:20%">Rate (₹)</th>
+                <th style="width:20%">Amount</th>
+                <th style="width:7%"></th>
+              </tr>
+            </thead>
+            <tbody id="items-body"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addItem()" style="margin-top:10px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </button>
+      </div>
+
+      <!-- Totals -->
+      <div class="form-section">
+        <div class="form-section-title">Pricing</div>
+        <div class="form-row">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">GST (%)</label>
+            <input type="number" id="inv-gst" class="form-input" placeholder="0" min="0" max="100" oninput="recalcTotals()">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Discount (₹)</label>
+            <input type="number" id="inv-discount" class="form-input" placeholder="0" min="0" oninput="recalcTotals()">
+          </div>
+        </div>
+
+        <div class="totals-section">
+          <div class="total-row">
+            <span class="total-label">Subtotal</span>
+            <span class="total-value" id="t-subtotal">₹0.00</span>
+          </div>
+          <div class="total-row" id="gst-row">
+            <span class="total-label">GST (<span id="gst-pct">0</span>%)</span>
+            <span class="total-value" id="t-gst">₹0.00</span>
+          </div>
+          <div class="total-row" id="disc-row">
+            <span class="total-label">Discount</span>
+            <span class="total-value" id="t-discount" style="color:var(--success)">-₹0.00</span>
+          </div>
+          <div class="total-row divider grand">
+            <span>Grand Total</span>
+            <span id="t-grand">₹0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group">
+        <label class="form-label">Notes / Terms (optional)</label>
+        <textarea id="inv-notes" class="form-input" placeholder="Payment terms, thank you note, bank details..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeInvoiceModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInvoice()" id="save-inv-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Invoice
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== INVOICE PREVIEW MODAL ===== -->
+<div class="modal-overlay hidden" id="invoice-preview-modal">
+  <div class="modal" style="max-width:820px">
+    <div class="modal-header">
+      <h2 class="modal-title">Invoice Preview</h2>
+      <button class="close-btn" onclick="closePreviewModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding-bottom:8px">
+      <div id="printable-invoice">
+        <div class="invoice-print-area" id="invoice-content"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePreviewModal()">Close</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportPDF()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF
+      </button>
+      <button class="btn btn-primary" onclick="printInvoice()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+/* =====================================================
+   CONFIGURATION — Replace with your Firebase config
+   ===================================================== */
+const FIREBASE_CONFIG = {
+  // Paste your Firebase project config here.
+  // Get it from: Firebase Console > Project Settings > General > Your apps
+  // Example:
+  // apiKey: "AIzaSy...",
+  // authDomain: "your-project.firebaseapp.com",
+  // projectId: "your-project-id",
+  // storageBucket: "your-project.appspot.com",
+  // messagingSenderId: "123456789",
+  // appId: "1:123456789:web:abcdef"
+};
+
+/* =====================================================
+   FIREBASE INIT
+   ===================================================== */
+let db = null;
+let auth = null;
+let currentUser = null;
+let useLocalStorage = false; // fallback when Firebase not configured
+
+try {
+  if (FIREBASE_CONFIG.apiKey) {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    auth = firebase.auth();
+    db = firebase.firestore();
+  } else {
+    useLocalStorage = true;
+  }
+} catch(e) {
+  useLocalStorage = true;
+}
+
+/* =====================================================
+   STATE
+   ===================================================== */
+let invoices = [];
+let editingInvoiceId = null;
+let currentPreviewInvoice = null;
+let settings = {
+  bizName: 'VIOX GRAPHICS',
+  bizGst: '',
+  bizPhone: '+91 6282240861',
+  bizEmail: 'juraijahmed5@gmail.com',
+  bizAddress: '',
+  prefix: 'INV'
+};
+let invoiceCounter = 1;
+
+/* =====================================================
+   INR FORMATTER
+   ===================================================== */
+const formatINR = (amount) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount || 0);
+};
+
+/* =====================================================
+   LOCALSTORAGE HELPERS (fallback)
+   ===================================================== */
+const LS = {
+  get: (key) => { try { return JSON.parse(localStorage.getItem('billmate_' + key)) } catch(e) { return null; } },
+  set: (key, val) => { localStorage.setItem('billmate_' + key, JSON.stringify(val)); },
+  remove: (key) => { localStorage.removeItem('billmate_' + key); }
+};
+
+/* =====================================================
+   AUTH FUNCTIONS
+   ===================================================== */
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.auth-tab:${tab === 'login' ? 'first-child' : 'last-child'}`).classList.add('active');
+  document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+  clearAuthMessages();
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  document.getElementById('auth-success').classList.add('hidden');
+}
+
+function showAuthSuccess(msg) {
+  const el = document.getElementById('auth-success');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  document.getElementById('auth-error').classList.add('hidden');
+}
+
+function clearAuthMessages() {
+  document.getElementById('auth-error').classList.add('hidden');
+  document.getElementById('auth-success').classList.add('hidden');
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showAuthError('Please enter email and password.');
+
+  const btn = document.getElementById('login-btn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+
+  if (!useLocalStorage && auth) {
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch(e) {
+      btn.innerHTML = 'Sign In'; btn.disabled = false;
+      showAuthError(getFriendlyError(e.code));
+    }
+  } else {
+    // LocalStorage auth fallback
+    const users = LS.get('users') || {};
+    if (!users[email] || users[email].password !== btoa(password)) {
+      btn.innerHTML = 'Sign In'; btn.disabled = false;
+      return showAuthError('Invalid email or password.');
+    }
+    currentUser = { email, displayName: users[email].name, uid: 'local_' + email };
+    LS.set('session', currentUser);
+    enterApp();
+    btn.innerHTML = 'Sign In'; btn.disabled = false;
+  }
+}
+
+async function handleRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+
+  if (!name || !email || !password) return showAuthError('All fields are required.');
+  if (password.length < 6) return showAuthError('Password must be at least 6 characters.');
+
+  const btn = document.getElementById('reg-btn');
+  btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+
+  if (!useLocalStorage && auth) {
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      showAuthSuccess('Account created! You are now logged in.');
+    } catch(e) {
+      btn.innerHTML = 'Create Account'; btn.disabled = false;
+      showAuthError(getFriendlyError(e.code));
+    }
+  } else {
+    const users = LS.get('users') || {};
+    if (users[email]) { btn.innerHTML = 'Create Account'; btn.disabled = false; return showAuthError('Email already registered.'); }
+    users[email] = { name, password: btoa(password) };
+    LS.set('users', users);
+    currentUser = { email, displayName: name, uid: 'local_' + email };
+    LS.set('session', currentUser);
+    enterApp();
+    btn.innerHTML = 'Create Account'; btn.disabled = false;
+  }
+}
+
+function handleDemoLogin() {
+  currentUser = { email: 'demo@billmate.in', displayName: 'Demo Business', uid: 'demo' };
+  // Load demo data
+  invoices = generateDemoData();
+  enterApp();
+  showToast('Welcome to the demo! 🎉', 'success');
+}
+
+async function handleLogout() {
+  if (!useLocalStorage && auth) {
+    await auth.signOut();
+  } else {
+    LS.remove('session');
+  }
+  currentUser = null;
+  invoices = [];
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+function getFriendlyError(code) {
+  const map = {
+    'auth/user-not-found': 'No account found with this email.',
+    'auth/wrong-password': 'Incorrect password.',
+    'auth/email-already-in-use': 'Email is already registered.',
+    'auth/invalid-email': 'Invalid email address.',
+    'auth/too-many-requests': 'Too many attempts. Try again later.',
+    'auth/network-request-failed': 'Network error. Check your connection.',
+  };
+  return map[code] || 'An error occurred. Please try again.';
+}
+
+/* =====================================================
+   APP INIT
+   ===================================================== */
+function enterApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').classList.add('visible');
+
+  // Load settings
+  loadSettings();
+
+  // Set user info in sidebar
+  const name = currentUser.displayName || currentUser.email.split('@')[0];
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('sidebar-name').textContent = name;
+  document.getElementById('sidebar-email').textContent = currentUser.email;
+
+  // Load invoices
+  loadInvoices();
+
+  // Set today's date defaults
+  document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+  const due = new Date(); due.setDate(due.getDate() + 15);
+  document.getElementById('inv-due-date').value = due.toISOString().split('T')[0];
+}
+
+/* ===== FIREBASE AUTH OBSERVER ===== */
+if (auth) {
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      enterApp();
+    } else {
+      // Check LS session
+      const sess = LS.get('session');
+      if (sess) { currentUser = sess; enterApp(); }
+    }
+  });
+} else {
+  // Check LS session on load
+  const sess = LS.get('session');
+  if (sess) { currentUser = sess; setTimeout(enterApp, 100); }
+}
+
+/* =====================================================
+   DATA FUNCTIONS
+   ===================================================== */
+async function loadInvoices() {
+  if (!currentUser) return;
+
+  if (!useLocalStorage && db && currentUser.uid && !currentUser.uid.startsWith('local_') && currentUser.uid !== 'demo') {
+    try {
+      const snap = await db.collection('users').doc(currentUser.uid).collection('invoices')
+        .orderBy('createdAt', 'desc').get();
+      invoices = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      invoiceCounter = invoices.length > 0 ? Math.max(...invoices.map(i => i.counter || 0)) + 1 : 1;
+    } catch(e) {
+      invoices = LS.get('invoices_' + currentUser.uid) || [];
+    }
+  } else {
+    invoices = LS.get('invoices_' + (currentUser.uid || 'demo')) || invoices;
+    invoiceCounter = invoices.length > 0 ? Math.max(...invoices.map(i => i.counter || 0)) + 1 : 1;
+  }
+
+  refreshAll();
+}
+
+async function persistInvoice(inv) {
+  if (!useLocalStorage && db && currentUser.uid && !currentUser.uid.startsWith('local_') && currentUser.uid !== 'demo') {
+    const col = db.collection('users').doc(currentUser.uid).collection('invoices');
+    if (inv.id) {
+      await col.doc(inv.id).set(inv);
+    } else {
+      const ref = await col.add(inv);
+      inv.id = ref.id;
+    }
+  } else {
+    LS.set('invoices_' + (currentUser.uid || 'demo'), invoices);
+  }
+}
+
+async function deleteInvoiceById(id) {
+  invoices = invoices.filter(i => i.id !== id);
+  if (!useLocalStorage && db && currentUser.uid && !currentUser.uid.startsWith('local_') && currentUser.uid !== 'demo') {
+    await db.collection('users').doc(currentUser.uid).collection('invoices').doc(id).delete();
+  } else {
+    LS.set('invoices_' + (currentUser.uid || 'demo'), invoices);
+  }
+  refreshAll();
+  showToast('Invoice deleted', 'success');
+}
+
+function loadSettings() {
+  const saved = LS.get('settings_' + (currentUser?.uid || 'demo'));
+  if (saved) { Object.assign(settings, saved); }
+  document.getElementById('biz-name').value = settings.bizName || '';
+  document.getElementById('biz-gst').value = settings.bizGst || '';
+  document.getElementById('biz-phone').value = settings.bizPhone || '';
+  document.getElementById('biz-email').value = settings.bizEmail || '';
+  document.getElementById('biz-address').value = settings.bizAddress || '';
+  document.getElementById('biz-prefix').value = settings.prefix || 'INV';
+}
+
+function saveSettings() {
+  settings.bizName = document.getElementById('biz-name').value.trim() || 'My Business';
+  settings.bizGst = document.getElementById('biz-gst').value.trim();
+  settings.bizPhone = document.getElementById('biz-phone').value.trim();
+  settings.bizEmail = document.getElementById('biz-email').value.trim();
+  settings.bizAddress = document.getElementById('biz-address').value.trim();
+  settings.prefix = document.getElementById('biz-prefix').value.trim() || 'INV';
+  LS.set('settings_' + (currentUser?.uid || 'demo'), settings);
+  showToast('Settings saved!', 'success');
+}
+
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.remove('hidden');
+  document.getElementById('page-title').textContent =
+    name === 'dashboard' ? 'Dashboard' :
+    name === 'invoices' ? 'All Invoices' : 'Settings';
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.trim().toLowerCase().includes(name === 'dashboard' ? 'dashboard' : name === 'invoices' ? 'invoice' : 'setting'))
+      n.classList.add('active');
+  });
+
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+
+  if (name === 'invoices') renderInvoicesTable(invoices);
+  if (name === 'dashboard') refreshDashboard();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+/* =====================================================
+   INVOICE MODAL
+   ===================================================== */
+let items = [];
+
+function openNewInvoice() {
+  editingInvoiceId = null;
+  items = [{ name: '', qty: 1, rate: 0 }];
+  renderItems();
+  document.getElementById('cust-name').value = '';
+  document.getElementById('cust-phone').value = '';
+  document.getElementById('cust-address').value = '';
+  document.getElementById('inv-gst').value = '18';
+  document.getElementById('inv-discount').value = '';
+  document.getElementById('inv-notes').value = '';
+  document.getElementById('inv-status').value = 'paid';
+  document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+  const due = new Date(); due.setDate(due.getDate() + 15);
+  document.getElementById('inv-due-date').value = due.toISOString().split('T')[0];
+  recalcTotals();
+  document.getElementById('invoice-modal').classList.remove('hidden');
+}
+
+function closeInvoiceModal() {
+  document.getElementById('invoice-modal').classList.add('hidden');
+}
+
+function addItem() {
+  items.push({ name: '', qty: 1, rate: 0 });
+  renderItems();
+  recalcTotals();
+}
+
+function removeItem(idx) {
+  if (items.length === 1) return showToast('At least one item is required');
+  items.splice(idx, 1);
+  renderItems();
+  recalcTotals();
+}
+
+function renderItems() {
+  const tbody = document.getElementById('items-body');
+  tbody.innerHTML = items.map((item, i) => `
+    <tr>
+      <td><input type="text" class="item-input" placeholder="Item name / description" value="${escHtml(item.name)}" oninput="items[${i}].name=this.value"></td>
+      <td><input type="number" class="item-input" style="width:70px" value="${item.qty}" min="1" oninput="items[${i}].qty=parseFloat(this.value)||0;recalcTotals()"></td>
+      <td><input type="number" class="item-input" placeholder="0.00" value="${item.rate || ''}" min="0" oninput="items[${i}].rate=parseFloat(this.value)||0;recalcTotals()"></td>
+      <td><div class="item-amount" id="item-amt-${i}">${formatINR(item.qty * item.rate)}</div></td>
+      <td>
+        <button onclick="removeItem(${i})" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:18px;line-height:1;padding:4px">×</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function recalcTotals() {
+  const subtotal = items.reduce((s, i) => s + (i.qty * i.rate), 0);
+  const gstPct = parseFloat(document.getElementById('inv-gst').value) || 0;
+  const discount = parseFloat(document.getElementById('inv-discount').value) || 0;
+  const gstAmt = subtotal * gstPct / 100;
+  const grand = subtotal + gstAmt - discount;
+
+  document.getElementById('t-subtotal').textContent = formatINR(subtotal);
+  document.getElementById('gst-pct').textContent = gstPct;
+  document.getElementById('t-gst').textContent = formatINR(gstAmt);
+  document.getElementById('t-discount').textContent = '-' + formatINR(discount);
+  document.getElementById('t-grand').textContent = formatINR(Math.max(0, grand));
+
+  // Update per-item amounts
+  items.forEach((item, i) => {
+    const el = document.getElementById('item-amt-' + i);
+    if (el) el.textContent = formatINR(item.qty * item.rate);
+  });
+}
+
+async function saveInvoice() {
+  const custName = document.getElementById('cust-name').value.trim();
+  if (!custName) return showToast('Customer name is required', 'error');
+  if (items.every(i => !i.name)) return showToast('Add at least one item', 'error');
+
+  const btn = document.getElementById('save-inv-btn');
+  btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+
+  const subtotal = items.reduce((s, i) => s + (i.qty * i.rate), 0);
+  const gstPct = parseFloat(document.getElementById('inv-gst').value) || 0;
+  const discount = parseFloat(document.getElementById('inv-discount').value) || 0;
+  const gstAmt = subtotal * gstPct / 100;
+  const grand = Math.max(0, subtotal + gstAmt - discount);
+
+  const inv = {
+    id: editingInvoiceId || Date.now().toString(),
+    counter: invoiceCounter++,
+    number: `${settings.prefix}-${String(invoiceCounter - 1).padStart(4, '0')}`,
+    custName,
+    custPhone: document.getElementById('cust-phone').value.trim(),
+    custAddress: document.getElementById('cust-address').value.trim(),
+    date: document.getElementById('inv-date').value,
+    dueDate: document.getElementById('inv-due-date').value,
+    status: document.getElementById('inv-status').value,
+    items: [...items],
+    gstPct, discount, subtotal, gstAmt, grand,
+    notes: document.getElementById('inv-notes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+
+  if (editingInvoiceId) {
+    const idx = invoices.findIndex(i => i.id === editingInvoiceId);
+    if (idx !== -1) invoices[idx] = inv;
+  } else {
+    invoices.unshift(inv);
+  }
+
+  await persistInvoice(inv);
+  refreshAll();
+  closeInvoiceModal();
+  showToast('Invoice saved! 🎉', 'success');
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save Invoice';
+  btn.disabled = false;
+}
+
+/* =====================================================
+   INVOICE PREVIEW & PRINT
+   ===================================================== */
+function previewInvoice(id) {
+  const inv = invoices.find(i => i.id === id);
+  if (!inv) return;
+  currentPreviewInvoice = inv;
+  renderInvoiceHTML(inv);
+  document.getElementById('invoice-preview-modal').classList.remove('hidden');
+}
+
+function closePreviewModal() {
+  document.getElementById('invoice-preview-modal').classList.add('hidden');
+}
+
+function renderInvoiceHTML(inv) {
+  const itemRows = inv.items.map((item, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${escHtml(item.name)}</td>
+      <td style="text-align:right">${item.qty}</td>
+      <td style="text-align:right" class="amount">${formatINR(item.rate)}</td>
+      <td style="text-align:right" class="amount">${formatINR(item.qty * item.rate)}</td>
+    </tr>
+  `).join('');
+
+  const statusColors = { paid: '#059669', pending: '#f59e0b', overdue: '#dc2626' };
+  const statusColor = statusColors[inv.status] || '#059669';
+
+  document.getElementById('invoice-content').innerHTML = `
+    <div class="inv-header">
+      <div>
+        <div class="inv-biz-name">${escHtml(settings.bizName || 'My Business')}</div>
+        <div class="inv-biz-sub">${escHtml(settings.bizAddress || '')}</div>
+        ${settings.bizGst ? `<div class="inv-biz-sub" style="margin-top:4px"><strong>GSTIN:</strong> ${escHtml(settings.bizGst)}</div>` : ''}
+        ${settings.bizPhone ? `<div class="inv-biz-sub">${escHtml(settings.bizPhone)}</div>` : ''}
+        ${settings.bizEmail ? `<div class="inv-biz-sub">${escHtml(settings.bizEmail)}</div>` : ''}
+      </div>
+      <div class="inv-number">
+        <h2>${escHtml(inv.number)}</h2>
+        <p>Date: ${formatDate(inv.date)}</p>
+        ${inv.dueDate ? `<p>Due: ${formatDate(inv.dueDate)}</p>` : ''}
+      </div>
+    </div>
+
+    <div class="inv-divider"></div>
+
+    <div class="inv-parties">
+      <div>
+        <div class="inv-party-label">Bill To</div>
+        <div class="inv-party-name">${escHtml(inv.custName)}</div>
+        ${inv.custPhone ? `<div class="inv-party-detail">${escHtml(inv.custPhone)}</div>` : ''}
+        ${inv.custAddress ? `<div class="inv-party-detail">${escHtml(inv.custAddress)}</div>` : ''}
+      </div>
+      <div>
+        <div class="inv-party-label">Payment Status</div>
+        <div class="inv-party-name" style="color:${statusColor}">${inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</div>
+      </div>
+    </div>
+
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th style="width:5%">#</th>
+          <th style="width:40%">Description</th>
+          <th style="width:10%;text-align:right">Qty</th>
+          <th style="width:20%;text-align:right">Rate</th>
+          <th style="width:20%;text-align:right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>${itemRows}</tbody>
+    </table>
+
+    <div style="display:flex;justify-content:flex-end">
+      <div class="inv-totals">
+        <div class="inv-total-row">
+          <span>Subtotal</span>
+          <span>${formatINR(inv.subtotal)}</span>
+        </div>
+        ${inv.gstPct ? `<div class="inv-total-row"><span>GST (${inv.gstPct}%)</span><span>${formatINR(inv.gstAmt)}</span></div>` : ''}
+        ${inv.discount ? `<div class="inv-total-row"><span>Discount</span><span>-${formatINR(inv.discount)}</span></div>` : ''}
+        <div class="inv-total-row grand">
+          <span>Total</span>
+          <span>${formatINR(inv.grand)}</span>
+        </div>
+      </div>
+    </div>
+
+    ${inv.notes ? `
+      <div style="margin-top:24px;padding:14px 18px;background:#f5f5fb;border-radius:8px;border-left:3px solid #5b4cf5">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#a8a8c0;margin-bottom:6px">Notes & Terms</div>
+        <div style="font-size:13px;color:#6b6b8a;line-height:1.7">${escHtml(inv.notes)}</div>
+      </div>
+    ` : ''}
+
+    <div class="inv-footer">
+      <div>
+        <div>Generated by BillMate • ${formatDate(new Date().toISOString().split('T')[0])}</div>
+        ${settings.bizEmail ? `<div style="margin-top:2px">${escHtml(settings.bizEmail)}</div>` : ''}
+      </div>
+      <div class="inv-stamp" style="border-color:${statusColor};color:${statusColor}">
+        <div style="font-size:9px">STATUS</div>
+        <div style="font-size:12px;font-weight:700">${inv.status.toUpperCase()}</div>
+      </div>
+    </div>
+  `;
+}
+
+function printInvoice() {
+  window.print();
+}
+
+function exportPDF() {
+  showToast('To save as PDF: Click Print → Choose "Save as PDF" as the destination', 'success');
+  setTimeout(() => window.print(), 800);
+}
+
+/* =====================================================
+   DASHBOARD
+   ===================================================== */
+function refreshDashboard() {
+  const total = invoices.reduce((s, i) => s + (i.grand || 0), 0);
+  const now = new Date();
+  const thisMonth = invoices.filter(i => {
+    const d = new Date(i.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).reduce((s, i) => s + (i.grand || 0), 0);
+  const avg = invoices.length ? total / invoices.length : 0;
+
+  document.getElementById('stat-revenue').textContent = formatINR(total);
+  document.getElementById('stat-count').textContent = invoices.length;
+  document.getElementById('stat-month').textContent = formatINR(thisMonth);
+  document.getElementById('stat-avg').textContent = formatINR(avg);
+
+  // Recent 5 invoices
+  const recent = invoices.slice(0, 5);
+  const tbody = document.getElementById('recent-invoices-body');
+  if (!recent.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📄</div><div class="empty-text">No invoices yet</div><div class="empty-sub">Create your first invoice!</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = recent.map(inv => `
+    <tr>
+      <td><span style="font-family:var(--mono);font-size:13px;color:var(--accent)">${escHtml(inv.number)}</span></td>
+      <td style="font-weight:500">${escHtml(inv.custName)}</td>
+      <td style="color:var(--ink-muted);font-size:13px">${formatDate(inv.date)}</td>
+      <td class="amount-cell">${formatINR(inv.grand)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="previewInvoice('${inv.id}')">View</button></td>
+    </tr>
+  `).join('');
+}
+
+/* =====================================================
+   INVOICES TABLE
+   ===================================================== */
+function renderInvoicesTable(list) {
+  const tbody = document.getElementById('invoices-body');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📄</div><div class="empty-text">No invoices found</div><div class="empty-sub">Create your first invoice to get started</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(inv => `
+    <tr>
+      <td><span style="font-family:var(--mono);font-size:13px;color:var(--accent)">${escHtml(inv.number)}</span></td>
+      <td style="font-weight:500">${escHtml(inv.custName)}</td>
+      <td style="font-size:13px;color:var(--ink-muted)">${escHtml(inv.custPhone || '—')}</td>
+      <td style="font-size:13px;color:var(--ink-muted)">${formatDate(inv.date)}</td>
+      <td style="font-size:13px">${inv.gstPct ? inv.gstPct + '%' : '—'}</td>
+      <td class="amount-cell">${formatINR(inv.grand)}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="previewInvoice('${inv.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete('${inv.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterInvoices() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const filtered = invoices.filter(i =>
+    i.custName.toLowerCase().includes(q) ||
+    i.number.toLowerCase().includes(q) ||
+    (i.custPhone && i.custPhone.includes(q))
+  );
+  renderInvoicesTable(filtered);
+}
+
+function confirmDelete(id) {
+  const inv = invoices.find(i => i.id === id);
+  if (!inv) return;
+  if (confirm(`Delete invoice ${inv.number} for ${inv.custName}? This cannot be undone.`)) {
+    deleteInvoiceById(id);
+  }
+}
+
+/* =====================================================
+   REFRESH ALL
+   ===================================================== */
+function refreshAll() {
+  refreshDashboard();
+  renderInvoicesTable(invoices);
+}
+
+/* =====================================================
+   THEME TOGGLE
+   ===================================================== */
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+  LS.set('theme', isDark ? 'light' : 'dark');
+  const icon = document.getElementById('theme-icon');
+  if (isDark) {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>';
+  } else {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  }
+}
+
+// Apply saved theme
+const savedTheme = LS.get('theme');
+if (savedTheme === 'dark') {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  setTimeout(() => {
+    const icon = document.getElementById('theme-icon');
+    if (icon) icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  }, 100);
+}
+
+/* =====================================================
+   TOAST
+   ===================================================== */
+function showToast(msg, type = '') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+/* =====================================================
+   HELPERS
+   ===================================================== */
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch(e) { return dateStr; }
+}
+
+/* =====================================================
+   DEMO DATA
+   ===================================================== */
+function generateDemoData() {
+  const names = ['Rajesh Kumar', 'Priya Sharma', 'Amit Patel', 'Sunita Singh', 'Vikram Nair'];
+  const products = [['Web Design', 'Logo Design', 'SEO Package'], ['Laptop', 'Mouse', 'Keyboard'], ['Consulting', 'Training', 'Support']];
+  const data = [];
+  let counter = 1;
+  for (let i = 0; i < 8; i++) {
+    const items = [{ name: products[i%3][0], qty: 1, rate: 5000 + Math.random()*10000 | 0 }];
+    if (Math.random() > 0.5) items.push({ name: products[i%3][1], qty: 2, rate: 1000 + Math.random()*3000 | 0 });
+    const subtotal = items.reduce((s, x) => s + x.qty * x.rate, 0);
+    const gstPct = [0, 5, 12, 18][i % 4];
+    const gstAmt = subtotal * gstPct / 100;
+    const grand = subtotal + gstAmt;
+    const d = new Date(); d.setDate(d.getDate() - i * 5);
+    data.push({
+      id: 'demo_' + i, counter,
+      number: `INV-${String(counter).padStart(4,'0')}`,
+      custName: names[i % names.length],
+      custPhone: '+91 98' + (Math.random()*10000000|0).toString().padStart(8,'0'),
+      custAddress: 'Bangalore, Karnataka',
+      date: d.toISOString().split('T')[0],
+      dueDate: new Date(d.getTime() + 15*86400000).toISOString().split('T')[0],
+      status: ['paid','paid','pending','overdue','paid','paid','pending','paid'][i],
+      items, gstPct, discount: 0, subtotal, gstAmt, grand,
+      notes: i % 3 === 0 ? 'Thank you for your business!' : '',
+      createdAt: d.toISOString()
+    });
+    counter++;
+  }
+  invoiceCounter = counter;
+  return data;
+}
+
+/* =====================================================
+   KEYBOARD SHORTCUTS
+   ===================================================== */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('invoice-modal').classList.add('hidden');
+    document.getElementById('invoice-preview-modal').classList.add('hidden');
+  }
+});
+</script>
+</body>
+</html>
